@@ -13,7 +13,7 @@ interface ToolbarMenu {
         data class RequestDesktop(val isChecked: Boolean) : Item()
         object FindInPage : Item()
         object Share : Item()
-        data class Back(val viewHistory: Boolean) : Item()
+        object Back : Item()
         data class Forward(val viewHistory: Boolean) : Item()
         data class Reload(val bypassCache: Boolean) : Item()
         object Stop : Item()

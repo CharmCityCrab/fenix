@@ -23,6 +23,7 @@ import mozilla.components.concept.engine.prompt.ShareData
 import mozilla.components.feature.session.SessionFeature
 import mozilla.components.support.base.feature.ViewBoundFeatureWrapper
 import mozilla.components.support.ktx.kotlin.isUrl
+import org.mozilla.fenix.FeatureFlags
 import org.mozilla.fenix.HomeActivity
 import org.mozilla.fenix.NavGraphDirections
 import org.mozilla.fenix.R
@@ -170,18 +171,14 @@ class DefaultBrowserToolbarController(
         trackToolbarItemInteraction(item)
 
         Do exhaustive when (item) {
-            is ToolbarMenu.Item.Back -> {
-                if (item.viewHistory) {
-                    navController.navigate(R.id.action_global_tabHistoryDialogFragment)
-                } else {
-                    sessionUseCases.goBack.invoke(currentSession)
-                }
-            }
+            ToolbarMenu.Item.Back -> sessionUseCases.goBack.invoke(currentSession)
             is ToolbarMenu.Item.Forward -> {
-                if (item.viewHistory) {
+                if (FeatureFlags.tabHistory && item.viewHistory) {
                     navController.navigate(R.id.action_global_tabHistoryDialogFragment)
-                } else {
+                } else if (!item.viewHistory) {
                     sessionUseCases.goForward.invoke(currentSession)
+                } else {
+                    // Do nothing if tab history feature flag is off and item.viewHistory is true
                 }
             }
             is ToolbarMenu.Item.Reload -> {
@@ -353,7 +350,7 @@ class DefaultBrowserToolbarController(
     @Suppress("ComplexMethod")
     private fun trackToolbarItemInteraction(item: ToolbarMenu.Item) {
         val eventItem = when (item) {
-            is ToolbarMenu.Item.Back -> Event.BrowserMenuItemTapped.Item.BACK
+            ToolbarMenu.Item.Back -> Event.BrowserMenuItemTapped.Item.BACK
             is ToolbarMenu.Item.Forward -> Event.BrowserMenuItemTapped.Item.FORWARD
             is ToolbarMenu.Item.Reload -> Event.BrowserMenuItemTapped.Item.RELOAD
             ToolbarMenu.Item.Stop -> Event.BrowserMenuItemTapped.Item.STOP
