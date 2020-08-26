@@ -5,30 +5,37 @@
 package org.mozilla.fenix.tabhistory
 
 import android.view.View
-import androidx.core.text.bold
-import androidx.core.text.buildSpannedString
 import androidx.core.view.isVisible
-import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.history_list_item.view.*
+import kotlinx.android.synthetic.main.tab_history_list_item.*
+import mozilla.components.support.ktx.android.content.getColorFromAttr
+import org.mozilla.fenix.R
+import org.mozilla.fenix.library.LibrarySiteItemView
+import org.mozilla.fenix.utils.view.ViewHolder
 
 class TabHistoryViewHolder(
-    private val view: View,
+    view: View,
     private val interactor: TabHistoryViewInteractor
-) : RecyclerView.ViewHolder(view) {
+) : ViewHolder(view) {
+
+    private lateinit var item: TabHistoryItem
+
+    init {
+        history_layout.setOnClickListener { interactor.goToHistoryItem(item) }
+    }
 
     fun bind(item: TabHistoryItem) {
-        view.history_layout.overflowView.isVisible = false
-        view.history_layout.urlView.text = item.url
-        view.history_layout.loadFavicon(item.url)
+        this.item = item
 
-        view.history_layout.titleView.text = if (item.isSelected) {
-            buildSpannedString {
-                bold { append(item.title) }
-            }
+        history_layout.displayAs(LibrarySiteItemView.ItemType.SITE)
+        history_layout.overflowView.isVisible = false
+        history_layout.titleView.text = item.title
+        history_layout.urlView.text = item.url
+        history_layout.loadFavicon(item.url)
+
+        if (item.isSelected) {
+            history_layout.setBackgroundColor(history_layout.context.getColorFromAttr(R.attr.tabHistoryItemSelectedBackground))
         } else {
-            item.title
+            history_layout.background = null
         }
-
-        view.setOnClickListener { interactor.goToHistoryItem(item) }
     }
 }
