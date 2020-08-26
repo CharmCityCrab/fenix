@@ -41,7 +41,6 @@ import mozilla.components.browser.session.SessionManager
 import mozilla.components.browser.state.state.SessionState
 import mozilla.components.browser.state.state.WebExtensionState
 import mozilla.components.browser.state.store.BrowserStore
-import mozilla.components.concept.engine.EngineSession
 import mozilla.components.concept.engine.EngineView
 import mozilla.components.feature.contextmenu.DefaultSelectionActionDelegate
 import mozilla.components.feature.search.BrowserStoreSearchAdapter
@@ -136,7 +135,7 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
         listOf(
             SpeechProcessingIntentProcessor(this, components.analytics.metrics),
             StartSearchIntentProcessor(components.analytics.metrics),
-            DeepLinkIntentProcessor(this, components.analytics.leanplumMetricsService),
+            DeepLinkIntentProcessor(this),
             OpenBrowserIntentProcessor(this, ::getIntentSessionId),
             OpenSpecificTabIntentProcessor(this)
         )
@@ -525,12 +524,6 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
 
     protected open fun getIntentSessionId(intent: SafeIntent): String? = null
 
-    /**
-     * Navigates to the browser fragment and loads a URL or performs a search (depending on the
-     * value of [searchTermOrURL]).
-     *
-     * @param flags Flags that will be used when loading the URL (not applied to searches).
-     */
     @Suppress("LongParameterList")
     fun openToBrowserAndLoad(
         searchTermOrURL: String,
@@ -538,11 +531,10 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
         from: BrowserDirection,
         customTabSessionId: String? = null,
         engine: SearchEngine? = null,
-        forceSearch: Boolean = false,
-        flags: EngineSession.LoadUrlFlags = EngineSession.LoadUrlFlags.none()
+        forceSearch: Boolean = false
     ) {
         openToBrowser(from, customTabSessionId)
-        load(searchTermOrURL, newTab, engine, forceSearch, flags)
+        load(searchTermOrURL, newTab, engine, forceSearch)
     }
 
     fun openToBrowser(from: BrowserDirection, customTabSessionId: String? = null) {
@@ -594,17 +586,11 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
             LoginDetailFragmentDirections.actionGlobalBrowser(customTabSessionId)
     }
 
-    /**
-     * Loads a URL or performs a search (depending on the value of [searchTermOrURL]).
-     *
-     * @param flags Flags that will be used when loading the URL (not applied to searches).
-     */
     private fun load(
         searchTermOrURL: String,
         newTab: Boolean,
         engine: SearchEngine?,
-        forceSearch: Boolean,
-        flags: EngineSession.LoadUrlFlags = EngineSession.LoadUrlFlags.none()
+        forceSearch: Boolean
     ) {
         val startTime = components.core.engine.profiler?.getProfilerTime()
         val mode = browsingModeManager.mode
@@ -630,7 +616,7 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
         }
 
         if (!forceSearch && searchTermOrURL.isUrl()) {
-            loadUrlUseCase.invoke(searchTermOrURL.toNormalizedUrl(), flags)
+            loadUrlUseCase.invoke(searchTermOrURL.toNormalizedUrl())
         } else {
             searchUseCase.invoke(searchTermOrURL)
         }

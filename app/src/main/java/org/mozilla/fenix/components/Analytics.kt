@@ -84,14 +84,12 @@ class Analytics(
         )
     }
 
-    val leanplumMetricsService by lazy { LeanplumMetricsService(context as Application) }
-
     val metrics: MetricController by lazy {
         MetricController.create(
             listOf(
                 GleanMetricsService(context),
-                leanplumMetricsService,
-                AdjustMetricsService(context as Application)
+                LeanplumMetricsService(context as Application),
+                AdjustMetricsService(context)
             ),
             isDataTelemetryEnabled = { context.settings().isTelemetryEnabled },
             isMarketingDataTelemetryEnabled = { context.settings().isMarketingTelemetryEnabled }

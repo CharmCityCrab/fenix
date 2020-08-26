@@ -59,10 +59,9 @@ class CustomTabToolbarMenu(
                 R.attr.disabled,
                 context
             ),
-            disableInSecondaryState = true,
-            longClickListener = { onItemTapped.invoke(ToolbarMenu.Item.Back(viewHistory = true)) }
+            disableInSecondaryState = true
         ) {
-            onItemTapped.invoke(ToolbarMenu.Item.Back(viewHistory = false))
+            onItemTapped.invoke(ToolbarMenu.Item.Back)
         }
 
         val forward = BrowserMenuItemToolbar.TwoStateButton(
